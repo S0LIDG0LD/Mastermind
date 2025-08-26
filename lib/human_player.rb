@@ -1,20 +1,15 @@
 # frozen_string_literal: true
 
 # This class is needed to add a Human Player in the game
-class HumanPlayer # < Player
-  def play_symbol!
-    loop do
-      print "Select your #{symbol} position (row, column): "
-      position = gets.split(',')
-      position.map!(&:to_i)
-      return position if @board.allowed_position?(position[0] - 1, position[1] - 1)
-
-      @board.invalid_position(position[0], position[1])
-    end
-    @board.display_board
+class HumanPlayer < Player
+  def make_guess!
+    round = "This is round #{@game.current_round} of #{@game.number_of_rounds}. "
+    print "#{round}Select a #{@game.number_of_colours} colour combiation: "
+    gets.chomp.split(',').join(' ')
+    # @game.display_board
   end
 
   def to_s
-    'Human'
+    'Humanoid'
   end
 end

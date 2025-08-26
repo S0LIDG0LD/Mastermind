@@ -2,7 +2,7 @@
 
 # main Ruby file
 
-# require_relative 'lib/player'
+require_relative 'lib/player'
 require_relative 'lib/game'
 require_relative 'lib/human_player'
 require_relative 'lib/gianna_ai_player'

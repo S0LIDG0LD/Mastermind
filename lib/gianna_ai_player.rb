@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # This class is needed to add a GiannaAI in the game
-class GiannaAIPlayer # < Player
+class GiannaAIPlayer < Player
   def play_symbol!
     loop do
       print "Select your #{symbol} position (row, column): "
@@ -15,6 +15,6 @@ class GiannaAIPlayer # < Player
   end
 
   def to_s
-    'Gianna'
+    'Gianna AI'
   end
 end
