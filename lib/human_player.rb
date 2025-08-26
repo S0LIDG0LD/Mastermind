@@ -4,7 +4,7 @@
 class HumanPlayer < Player
   def make_guess!
     round = "This is round #{@game.current_round} of #{@game.number_of_rounds}. "
-    print "#{round}Select a #{@game.number_of_colours} colour combiation: "
+    print "#{round}Choose #{@game.number_of_colours} colours: "
     gets.chomp.split(',').join(' ')
     # @game.display_board
   end
