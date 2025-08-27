@@ -14,7 +14,7 @@ class Game
     game_title
     @solution = create_random_solution
     @guess = []
-    puts "The secret combination to guess is: #{@solution}"
+    # puts "The secret combination to guess is: #{@solution}"
     @rounds_played = []
     display_board
   end
@@ -43,15 +43,19 @@ class Game
   end
 
   def can_play_round?
-    return false if current_round > NUMBER_OF_ROUNDS
+    if current_round > NUMBER_OF_ROUNDS
+      puts "#{@player} had 12 rounds to guess the solution, but #{@player} failed"
+      puts
+      false
+    else
+      guess = @player.make_guess!
+      # puts "guess: #{guess}, solution: #{@solution}"
+      return false if guessed?(guess)
 
-    guess = @player.make_guess!
-    puts "guess: #{guess}, solution: #{@solution}"
-    return false if guessed?(guess)
-
-    # @board_matrix[position[0] - 1][position[1] - 1] = player.symbol
-    # display_board
-    true
+      # @board_matrix[position[0] - 1][position[1] - 1] = player.symbol
+      # display_board
+      true
+    end
   end
 
   def guessed?(guess)
@@ -74,16 +78,18 @@ class Game
     else
       puts "#{@player} has not guessed correctly. #{@player} has #{12 - @rounds_played.size - 1} more rounds to guess the solution"
       solution = @solution.split
+      # puts solution
       last_round.push(check(guess, solution))
     end
     last_round.push(adjusted_guess(guess))
-    puts last_round
+    # puts last_round
     @rounds_played.push(last_round)
     display_board(guessed)
     guessed
   end
 
   def check(guess, solution)
+    # puts solution
     guess_to_check = guess.split
     result = []
     index_size = guess_to_check.size
@@ -94,21 +100,22 @@ class Game
         guess_to_check.delete_at(index)
         solution.delete_at(index)
         index_size -= 1
+      else
+        index += 1
       end
-      index += 1
     end
     index = 0
     index_size = guess_to_check.size
     while index < index_size
       if solution.include?(guess_to_check[index])
         result.push('O')
-        guess_to_check.delete_at(index)
         solution.delete(guess_to_check[index])
+        guess_to_check.delete_at(index)
         index_size -= 1
       else
         result.push('-')
+        index += 1
       end
-      index += 1
     end
     result.shuffle.join(' ')
   end
