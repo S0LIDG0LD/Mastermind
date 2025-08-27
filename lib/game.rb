@@ -4,7 +4,7 @@
 # This class should also display the board status to the screen
 class Game
   NUMBER_OF_ROUNDS = 12
-  COLOURS = %w[white yellow orange red pink blue green purple brown gray black].freeze
+  COLORS = %w[white yellow orange red pink blue green purple brown gray black].freeze
   SOLUTION_SIZE = 4
   attr_reader :solution, :current_player_id
 
@@ -13,6 +13,7 @@ class Game
     @player = player.new(self)
     game_title
     @solution = create_random_solution
+    @guess = []
     puts "The secret combination to guess is: #{@solution}"
     @rounds_played = []
     display_board
@@ -20,8 +21,8 @@ class Game
 
   def game_title
     puts
-    puts "#{@player} has 12 rounds to guess a combination of #{SOLUTION_SIZE} of these colours. Colours can be repeated!"
-    puts COLOURS.join(', ')
+    puts "#{@player} has 12 rounds to guess a combination of #{SOLUTION_SIZE} of these colors. Colors can be repeated!"
+    puts COLORS.join(', ')
     puts
     puts "The Mastermind is #{@mastermind}, BEWARE!"
     puts
@@ -29,7 +30,7 @@ class Game
 
   def create_random_solution
     solution = []
-    SOLUTION_SIZE.times { solution.push(COLOURS.sample) }
+    SOLUTION_SIZE.times { solution.push(COLORS.sample) }
     solution.join(' ')
   end
 
@@ -56,78 +57,61 @@ class Game
   def guessed?(guess)
     guessed = false
     last_round = []
+    @guess = guess.split
     puts
     if guess == @solution
       puts "Congratulations #{@player}! #{@player} guessed correctly in #{@rounds_played.size + 1} rounds"
       # puts @rounds_played
       guessed = true
-      guess.split.each do |item|
-        word_and_result = []
-        word_and_result.push(item)
-        word_and_result.push('X')
-        last_round.push(word_and_result)
-      end
+      result = 'X X X X'
+      last_round.push(result)
+      # guess.split.each do |item|
+      #   word_and_result = []
+      #   word_and_result.push(item)
+      #   word_and_result.push('X')
+      #   last_round.push(word_and_result)
+      # end
     else
       puts "#{@player} has not guessed correctly. #{@player} has #{12 - @rounds_played.size - 1} more rounds to guess the solution"
-      last_round = check(guess)
+      solution = @solution.split
+      last_round.push(check(guess, solution))
     end
-    # puts last_round
+    last_round.push(adjusted_guess(guess))
+    puts last_round
     @rounds_played.push(last_round)
-    display_board
+    display_board(guessed)
     guessed
   end
 
-  def check(guess)
-    round = []
-    checked_solution = @solution.split
-    checked_guess = guess.split
-    index_size = checked_guess.size
+  def check(guess, solution)
+    guess_to_check = guess.split
+    result = []
+    index_size = guess_to_check.size
     index = 0
     while index < index_size
-      word_and_result = []
-      if checked_guess[index] == checked_solution[index]
-        word_and_result.push(checked_guess[index])
-        word_and_result.push('X')
-        checked_guess.delete_at(index)
-        checked_solution.delete_at(index)
+      if guess_to_check[index] == solution[index]
+        result.push('X')
+        guess_to_check.delete_at(index)
+        solution.delete_at(index)
         index_size -= 1
-        round.push(word_and_result)
       end
       index += 1
     end
-    checked_guess.each do |item|
-      word_and_result = []
-      word_and_result.push(item)
-      if checked_solution.include?(item)
-        word_and_result.push('O')
-        checked_solution.delete(item)
+    index = 0
+    index_size = guess_to_check.size
+    while index < index_size
+      if solution.include?(guess_to_check[index])
+        result.push('O')
+        guess_to_check.delete_at(index)
+        solution.delete(guess_to_check[index])
+        index_size -= 1
       else
-        word_and_result.push('-')
+        result.push('-')
       end
-      round.push(word_and_result)
+      index += 1
     end
-    round
+    result.shuffle.join(' ')
   end
-
-  # def current_player
-  #   @players[@current_player_id]
-  # end
-
-  # def other_player_id
-  #   1 - @current_player_id
-  # end
-
-  # def switch_players!
-  #   @current_player_id = other_player_id
-  # end
-
-  # def opponent
-  #   @players[@other_player_id]
-  # end
-
-  # def top_bottom_row
-  #   puts '    1  2  3'
-  # end
 
   def display_result_line
     puts @rounds_played.last.join(' ')
@@ -135,28 +119,41 @@ class Game
 
   def display_border_line(size = 'long')
     if size == 'short'
-      puts '              +---------------------------------+'
+      puts '               +---------------------------------+'
     else
-      puts '+-------------+---------------------------------+'
+      puts '+--------------+---------------------------------+'
     end
   end
 
-  def display_board
-    puts
-    display_border_line('short')
-    puts '              |    ?       ?       ?       ?    |'
-    display_border_line
-    @rounds_played.reverse.each_with_index do |words, index|
-      print "| #{@rounds_played.size - index} | "
-      result = ''
-      adjusted_guess = ''
-      words.each do |word|
-        result += "#{word[1]} "
-        adjusted_guess += word[0].center(8)
-      end
-      puts "#{result}| #{adjusted_guess}|"
+  def reveal_solution
+    puts "               | #{adjusted_guess(@solution)}|"
+  end
+
+  def adjusted_round_number(number)
+    number < 10 ? " #{number}" : number.to_s
+  end
+
+  def display_rounds
+    @rounds_played.reverse.each_with_index do |round, index|
+      puts "| #{adjusted_round_number(@rounds_played.size - index)} | #{round[0]} | #{round[1]}|"
       display_border_line
     end
+  end
+
+  def adjusted_guess(guess)
+    guess.split.reduce('') { |adjusted_guess, word| adjusted_guess + word.center(8) }
+  end
+
+  def display_board(guessed = false)
+    puts
+    display_border_line('short')
+    if guessed
+      reveal_solution
+    else
+      puts '               |    ?       ?       ?       ?    |'
+    end
+    display_border_line
+    display_rounds
     puts
   end
 
@@ -210,7 +207,7 @@ class Game
     NUMBER_OF_ROUNDS
   end
 
-  def number_of_colours
+  def number_of_colors
     SOLUTION_SIZE
   end
 end
